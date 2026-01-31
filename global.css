@@ -1,3 +1,21 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    :root {
+        --color-background: #F9F6F1;
+        /* Parchment */
+        --color-text: #020912;
+        /* Ink Black */
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --color-background: #020912;
+            /* Ink Black */
+            --color-text: #F9F6F1;
+            /* Parchment */
+        }
+    }
+}

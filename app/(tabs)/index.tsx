@@ -1,98 +1,83 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import ArchedCarousel from '@/components/arched-carousel';
+import { Ionicons } from '@expo/vector-icons';
+import React from 'react';
+import { Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+// Dummy Data
+const TEMPLATES = [
+  { id: 1, title: 'Morning Routine', category: 'Health', streak: 12 },
+  { id: 2, title: 'Deep Work', category: 'Productivity', streak: 5 },
+  { id: 3, title: 'Gym Session', category: 'Fitness', streak: 45 },
+  { id: 4, title: 'Night Reflection', category: 'Mindfulness', streak: 8 },
+];
 
 export default function HomeScreen() {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <SafeAreaView className="flex-1 bg-background">
+      {/* Header */}
+      <View className="flex-row justify-between items-center px-6 py-4">
+        {/* Streak Counter */}
+        <View className="flex-row items-center space-x-1">
+          <Ionicons name="flame" size={24} color="#F59E0B" />
+          <Text className="text-xl font-bold text-text">87</Text>
+        </View>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        {/* Title */}
+        <Text className="text-2xl font-black tracking-widest text-text">
+          COACHAI
+        </Text>
+
+        {/* Notification */}
+        <TouchableOpacity className="relative">
+          <Ionicons name="notifications-outline" size={26} color="var(--color-text)" />
+          <View className="absolute top-0 right-0 w-3 h-3 bg-primary rounded-full border-2 border-background" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Main Carousel Section */}
+      <View className="flex-1 justify-center pb-20">
+        <ArchedCarousel
+          data={[...TEMPLATES, { id: 'new', type: 'create' }]}
+          renderItem={(item: any) => {
+            if (item.type === 'create') {
+              return (
+                <TouchableOpacity className="w-[280px] h-[360px] border-4 border-dashed border-secondary/30 rounded-3xl justify-center items-center bg-surface/50">
+                  <Ionicons name="add-circle-outline" size={64} color="var(--color-primary)" />
+                  <Text className="text-primary font-bold text-lg mt-4">Create New</Text>
+                </TouchableOpacity>
+              );
+            }
+
+            return (
+              <TouchableOpacity activeOpacity={0.9}>
+                <View className="w-[280px] h-[360px] bg-background rounded-3xl border-[3px] border-text shadow-lg overflow-hidden relative">
+                  {/* Card Image/Gradient Placeholder */}
+                  <View className="h-2/3 bg-secondary/20 justify-center items-center">
+                    <Ionicons name="trophy-outline" size={80} color="var(--color-secondary)" />
+                  </View>
+
+                  {/* Card Content */}
+                  <View className="p-5 bg-background h-1/3 border-t-2 border-text/10">
+                    <Text className="text-sm font-bold text-primary uppercase tracking-wider">
+                      {item.category}
+                    </Text>
+                    <Text className="text-2xl font-bold text-text mt-1">
+                      {item.title}
+                    </Text>
+                    <View className="flex-row items-center mt-3">
+                      <Ionicons name="flash" size={14} color="#F59E0B" />
+                      <Text className="text-muted ml-1 text-xs">{item.streak} day streak</Text>
+                    </View>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            );
+          }}
+        />
+      </View>
+
+      {/* Note: Tabs are handled by _layout.tsx, but this pushes content up */}
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});

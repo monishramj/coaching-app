@@ -17,10 +17,10 @@ export async function generateVector(text: string) {
     apiKey: apiKey
   });
   
-  const response = await genAI.models.generateContent({
+  const response = await genAI.models.embedContent({
     model: "gemini-embedding-001",
     contents: `Instructuons on what gemini should do\n${text}`
     })
 
-    return response;
+    return response.embedding.values;
 }

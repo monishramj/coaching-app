@@ -25,30 +25,40 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // expecting a json file of type userID: text:
-    const { userId, text } = await req.json();
-    
-    // If either is missing, throw error
-    if (!userId || !text) {
-      return new Response(JSON.stringify({ error: "userId and text are required" }), { 
-        status: 400 
-      });
-    }
+  // expecting a json file of type userID: text and an array messages of type ChatMessage:
+  const { userId, messages }: { userId: string; messages: ChatMessage[] } = await req.json();
+
+  // Ensure userID exists, messages is an array and it contains elements
+  if (!userId || !Array.isArray(messages) || messages.length === 0) {
+    return new Response(
+      JSON.stringify({ error: "userId and a non-empty messages array are required" }), 
+      { status: 400, headers: { "Content-Type": "application/json" } }
+    );
+  }
 
     /* Turns the Chat message array of conversation between user and model into a single
     string to pass to the AI to summarize
     */
     const conversationText = messages
-    .map(m => `${m.role}: ${m.parts[0].text}`)
+    .map(m => `${m.role}: ${m.text}`)
     .join('\n');
 
-    /* We eplace all ` with _ to avoid sql injections or accidental breaks when user
-    input includes a ` and prematurely escapes the sequence */
+    // We eplace all ` with _ to avoid prematurely escaping the sequence
     const safeConversationText = conversationText.replace(/`/g, "_");
 
-    const myBulletPoints = summarizeMessages(safeConversationText);
+    const myBulletPoints = await summarizeMessages(safeConversationText);
 
 
+    //Declared outside because of its use in the "return new Response" for debugging
+    let vector: number[] = [];
+    for (let i = 0; i < myBulletPoints.length; i++) {
+      const point = myBulletPoints[i];
+
+      // All alls to funtions involving a long duration need 'await' ot wait for it to finish.
+      vector = await generateVector(point);
+
+      //ToDO: make the db call to create the row
+    }
 
     return new Response(
       JSON.stringify({ 

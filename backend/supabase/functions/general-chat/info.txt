@@ -35,3 +35,12 @@ When retrieving, fetch multiple rows to give the model enough context.
 ------------------------------
 When we do the search in general chat for relavent memories, make sure to update last-accessed
 else it behaves as a lifo.
+
+ok now i need to create the chat function
+
+this edge function is going to basically be
+
+
+
+recieves one chat from frontend, does a gemeni vector embed for that one message, queries the database to recieve the top few matches for that vector for "context" from the long term memory. does prompt injection with the original message + the messages retrieved from long term memory into gemini and returns 
+

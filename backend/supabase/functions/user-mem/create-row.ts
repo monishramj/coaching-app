@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
         .from('user-memories')
         .insert({
           user_id: userId,
-          Memory: point,
+          memory: point,
           embedding: vector
         });
 
@@ -66,6 +66,11 @@ Deno.serve(async (req) => {
         throw new Error(`Failed to insert row: ${error.message}`);
       }
     }
+
+    await supabase.rpc('delete_least_accessed_memories', {
+      p_user_id: userId,
+      p_max_count: 75
+    });
 
     return new Response(
       JSON.stringify({ 

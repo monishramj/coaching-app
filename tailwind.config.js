@@ -15,9 +15,12 @@ module.exports = {
         success: "#4C9F70",   // Shamrock
         background: "var(--color-background)", // Dynamic
         text: "var(--color-text)",             // Dynamic
-        // Raw access if needed:
+        // raw access:
         parchment: "#F9F6F1",
         ink: "#020912",
+        lilac: '#7869B0',
+        shamrock: '#4C9F70',
+        pine: '#4A706E',
       },
     },
   },

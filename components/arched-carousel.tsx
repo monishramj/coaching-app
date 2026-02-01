@@ -176,7 +176,7 @@ export default function ArchedCarousel({
                 paddingHorizontal: SPACER,
                 alignItems: 'center',
                 // Add padding so the cards don't get clipped when they curve down
-                paddingVertical: 100
+                paddingBottom: 25
             }}
         >
             {data.map((item, index) => (

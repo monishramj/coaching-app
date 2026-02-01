@@ -30,3 +30,8 @@ Keep summaries 2–3 sentences per bullet, 2–5 bullets per 50-message chunk.
 Include user and assistant content.
 Store each bullet as a separate row, or keep all bullets from the chunk in a single row — either works, just be consistent.
 When retrieving, fetch multiple rows to give the model enough context.
+
+
+------------------------------
+When we do the search in general chat for relavent memories, make sure to update last-accessed
+else it behaves as a lifo.

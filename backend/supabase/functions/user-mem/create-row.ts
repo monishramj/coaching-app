@@ -1,21 +1,19 @@
 /*
- Recieves the vector embedded array from vector_embed.ts
- and the array from summary.ts and combines them into a row stored in supabase
- with the userID
-*/
+  Recieves: 
+  - Unique UUID from general-chat
+  - Array of "ChatMessage" types from general-chat
 
-/* there is a for loop in here that iterates through the array returned by summary.ts
-for each bulet point i do smth like
-uuic - previously stored
-string- the bullet point im on
-vector - returned from function
-
-store these into db via a call
+  Does:
+  - Converts ChatMessage array into a single string
+  - Passes string to summary.ts and recieves an array of bullet points
+  - Iterates through array and passes each bullet point to vector_embed.ts
+  - Within each iteration, combines vector, the bullet point and uuid and creates a new table in db to be stored as long term memory
 */
 
 import { summarizeMessages } from "./summary.ts";
 import { generateVector } from "./vector_embed.ts";
 import { ChatMessage } from "../types.ts";
+import { supabase } from "../../supabase-setup.ts";
 
 Deno.serve(async (req) => {
   const authHeader = req.headers.get("Authorization");
@@ -53,11 +51,20 @@ Deno.serve(async (req) => {
     let vector: number[] = [];
     for (let i = 0; i < myBulletPoints.length; i++) {
       const point = myBulletPoints[i];
-
-      // All alls to funtions involving a long duration need 'await' ot wait for it to finish.
+      // All calls to funtions involving a long duration need 'await' to wait for it to finish.
       vector = await generateVector(point);
 
-      //ToDO: make the db call to create the row
+      const { error } = await supabase
+        .from('user-memories')
+        .insert({
+          user_id: userId,
+          Memory: point,
+          embedding: vector
+        });
+
+      if (error) {
+        throw new Error(`Failed to insert row: ${error.message}`);
+      }
     }
 
     return new Response(

@@ -4,7 +4,6 @@ bullet points and stores each bullet point in an array.
 */
 
 import { GoogleGenAI } from "google-gen";
-import { maxHeaderSize } from "node:http";
 
 const apiKey = Deno.env.get("GEMINI_API");
 if (!apiKey) {
@@ -17,24 +16,14 @@ const genAI = new GoogleGenAI({
 
 //ToDo: Create ChatMessages 'struct' of type role: message:
 // To be done in general chat edge function when I manage user chat hist
-async function summarizeMessages(messages: ChatMessage[]) {
-    /* Turns the Chat message array of conversation between user and model into a single
-    string to pass to the AI to summarize
-    */
-    const conversationText = messages
-    .map(m => `${m.role}: ${m.parts[0].text}`)
-    .join('\n');
-
-    /* We eplace all ` with _ to avoid sql injections or accidental breaks when user
-    input includes a ` and prematurely escapes the sequence */
-    const safeConversationText = conversationText.replace(/`/g, "_");
+export async function summarizeMessages(messages: string) {
 
     const response = await genAI.models.generateContent({
         model: "gemini-2.5-pro",
         //Update instructions later. Assume it returns its bullet points seperated by "\n"
         contents: `Summarize this conversation, focusing on key goals, 
             decisions, and context that would be useful for future 
-            conversations:\n${safeConversationText}`
+            conversations:\n${messages}`
     });
     
     /* assuming that response always returns a text. Need to handle cases where gemini doesnt return text.

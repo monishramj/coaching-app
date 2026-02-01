@@ -1,0 +1,1 @@
+export type ChatMessage = { role: "user" | "agent"; text: string };

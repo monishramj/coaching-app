@@ -4,7 +4,6 @@ import React from 'react';
 import { Platform, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-// 1. Define your palette directly here for easy access
 const C = {
   ink: '#020912',       // Active / Border
   parchment: '#F9F6F1', // Background
@@ -45,13 +44,13 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
           />
         </TouchableOpacity>
 
-        {/* -- Marketplace Tab (Flame) -- */}
+        {/* -- Marketplace Tab -- */}
         <TouchableOpacity
           onPress={() => navigation.navigate('marketplace')}
           style={{ padding: 8 }}
         >
           <Ionicons
-            name={currentRoute === 'marketplace' ? "flame" : "flame-outline"}
+            name={currentRoute === 'marketplace' ? "compass" : "compass-outline"}
             size={22}
             color={currentRoute === 'marketplace' ? C.ink : C.pine}
           />

@@ -1,8 +1,0 @@
-I now need to create an edge function of general chat
-how it works is:
-- i recieve a chat or one message from frontend
-- I encode it with gemeni vector embedding
-- I conduct a search in my memories table in supabase database and find the most similar vectors
-then i get the memories column that cointains the actaul memory that the search returned and get all of those
-
-then I.. need to figure out how coaches work

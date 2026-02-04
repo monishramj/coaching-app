@@ -1,157 +1,107 @@
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
-import React from 'react';
-import { FlatList, Text, TextInput, TouchableOpacity, View, StyleSheet } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { Text, TouchableOpacity, View, StyleSheet, ScrollView, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Colors } from '@/constants/theme';
+import { useRouter } from 'expo-router';
+import Animated, { FadeInDown, Layout } from 'react-native-reanimated';
 
-const C = {
-    parchment: '#F9F6F1',
-    ink: '#020912',
-    lilac: '#7869B0',
-    shamrock: '#4C9F70',
-    pine: '#4A706E',
-    gold: '#D4AF37',
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+// ── TYPES ──
+interface MarketplaceItem {
+    id: number;
+    title: string;
+    author: string;
+    category: string;
+    price: string;
+    rating: number;
+    accent: string;
+    downloads?: string;
+    subtitle?: string;
+}
+
+const SNAPPY_SPRING = {
+    stiffness: 600,
+    damping: 35,
+    mass: 0.5,
 };
 
 // ── MOCK DATA ──
-const MARKET_ITEMS = [
-    {
-        id: 1,
-        title: '75 Hard Core',
-        author: 'Atlas',
-        category: 'Fitness',
-        price: 'Free',
-        rating: 4.9,
-        downloads: '12k',
-        icon: 'barbell',
-        accent: 'bg-lilac',
-        textAccent: 'text-lilac',
-        hex: C.lilac
-    },
-    {
-        id: 2,
-        title: 'Deep Work OS',
-        author: 'Sage',
-        category: 'Productivity',
-        price: '$4.99',
-        rating: 5.0,
-        downloads: '8.5k',
-        icon: 'hourglass',
-        accent: 'bg-shamrock',
-        textAccent: 'text-shamrock',
-        hex: C.shamrock
-    },
-    {
-        id: 3,
-        title: 'Keto Kickstart',
-        author: 'Flow',
-        category: 'Nutrition',
-        price: '$2.99',
-        rating: 4.7,
-        downloads: '3k',
-        icon: 'nutrition',
-        accent: 'bg-pine',
-        textAccent: 'text-pine',
-        hex: C.pine
-    },
-    {
-        id: 4,
-        title: 'Python Mastery',
-        author: 'Sage',
-        category: 'Learning',
-        price: '$9.99',
-        rating: 4.8,
-        downloads: '15k',
-        icon: 'code-slash',
-        accent: 'bg-lilac',
-        textAccent: 'text-lilac',
-        hex: C.lilac
-    },
+const FEATURED: MarketplaceItem = {
+    id: 0,
+    title: '75 HARD CHALLENGE',
+    subtitle: 'Transform Your Life in 75 Days',
+    author: 'Atlas',
+    category: 'Featured',
+    rating: 4.9,
+    downloads: '25k',
+    price: 'Free',
+    accent: '#7869B0',
+};
+
+const TRENDING: MarketplaceItem[] = [
+    { id: 1, title: '75 HARD CORE', author: 'Atlas', category: 'Fitness', price: 'Free', rating: 4.9, accent: '#7869B0' },
+    { id: 2, title: 'DEEP WORK OS', author: 'Sage', category: 'Productivity', price: '$4.99', rating: 5.0, accent: '#4C9F70' },
+    { id: 3, title: 'KETO KICKSTART', author: 'Flow', category: 'Nutrition', price: '$2.99', rating: 4.7, accent: '#4A706E' },
 ];
 
-const Rule = ({ colorClass = 'bg-ink' }: { colorClass?: string }) => (
-    <View className={`h-[1px] w-full ${colorClass}`} />
-);
-
 export default function MarketplaceScreen() {
+    const router = useRouter();
+    const colorScheme = useColorScheme() ?? 'light';
+    const primaryColor = Colors[colorScheme].tint;
+    const [selectedCategory, setSelectedCategory] = useState('All');
+    const categories = ['All', 'Fitness', 'Productivity', 'Wellness', 'Career'];
 
-    const renderItem = ({ item }: { item: typeof MARKET_ITEMS[0] }) => (
-        <TouchableOpacity activeOpacity={0.9} className="mb-6 mx-6">
-            {/* OUTER SHADOW CONTAINER */}
-            <View
-                style={{
-                    shadowColor: "#000",
-                    shadowOffset: { width: 0, height: 8 },
-                    shadowOpacity: 0.12,
-                    shadowRadius: 10,
-                    elevation: 6,
-                    backgroundColor: 'transparent'
-                }}
-            >
-                {/* INNER GLASS CONTAINER */}
-                <View className="rounded-3xl overflow-hidden border border-white/60 bg-white/20 relative">
-                    <BlurView intensity={70} tint="light" style={StyleSheet.absoluteFill} />
+    // ── COMPONENTS ──
 
-                    {/* Contrast Border Wrapper */}
-                    <View
-                        className="bg-white/30 border-[1px]"
-                        style={{ borderColor: 'rgba(2, 9, 18, 0.1)' }}
-                    >
-                        {/* Accent Bar */}
-                        <View className={`h-1.5 ${item.accent} w-full`} />
+    const HeroCard = () => (
+        <TouchableOpacity activeOpacity={0.9} className="mx-6 mb-10">
+            <View className="rounded-[32px] overflow-hidden border-[2px] border-white/60 shadow-2xl shadow-black/20" style={{ height: 420 }}>
+                <LinearGradient
+                    colors={[FEATURED.accent, 'rgba(2, 9, 18, 0.95)']}
+                    locations={[0, 0.8]}
+                    style={StyleSheet.absoluteFill}
+                />
+                <View className="flex-1 p-8 justify-end">
+                    <View className="self-start px-3 py-1 rounded-full bg-white/20 border border-white/30 mb-4">
+                        <Text className="text-[10px] font-black text-white uppercase tracking-widest">{FEATURED.category}</Text>
+                    </View>
+                    <Text className="text-4xl font-black text-white mb-2 -tracking-[2.5px] leading-[40px]">{FEATURED.title}</Text>
+                    <Text className="text-base font-bold text-white/70 mb-8">{FEATURED.subtitle}</Text>
 
-                        <View className="p-5">
-                            {/* Header: Category & Price */}
-                            <View className="flex-row justify-between items-start mb-3">
-                                <View className={`px-2 py-1 rounded-md bg-white/50 border border-white/60`}>
-                                    <Text className={`text-[9px] uppercase tracking-[1.5px] font-black ${item.textAccent}`}>
-                                        {item.category}
-                                    </Text>
-                                </View>
-                                <View className="flex-row items-center gap-1">
-                                    <Ionicons name="star" size={12} color={C.ink} />
-                                    <Text className="text-xs font-black text-ink">{item.rating}</Text>
-                                </View>
+                    <View className="flex-row gap-3">
+                        <TouchableOpacity className="flex-1 bg-white py-4 rounded-2xl items-center justify-center shadow-lg">
+                            <Text className="text-[#020912] font-black text-xs uppercase tracking-widest">Install Now</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity className="w-14 h-14 bg-white/10 rounded-2xl items-center justify-center border border-white/30">
+                            <Ionicons name="bookmark-outline" size={22} color="white" />
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </View>
+        </TouchableOpacity>
+    );
+
+    const HorizontalCard = ({ item }: { item: MarketplaceItem }) => (
+        <TouchableOpacity activeOpacity={0.8} className="mr-4" style={{ width: 170 }}>
+            <View className="rounded-[28px] overflow-hidden border-[1.5px] border-white/60 shadow-xl" style={{ height: 240 }}>
+                <LinearGradient colors={[item.accent, 'rgba(2, 9, 18, 0.9)']} style={StyleSheet.absoluteFill} />
+                <View className="flex-1 p-5 justify-between">
+                    <View className="self-start px-2 py-1 rounded-full bg-white/10 border border-white/20">
+                        <Text className="text-[8px] font-black text-white uppercase tracking-[1.5px]">{item.category}</Text>
+                    </View>
+                    <View>
+                        <Text className="text-[18px] font-black text-white mb-1 -tracking-[0.5px] leading-tight">{item.title}</Text>
+                        <View className="flex-row items-center justify-between mt-3">
+                            <View className="flex-row items-center gap-1">
+                                <Ionicons name="star" size={10} color="white" />
+                                <Text className="text-[10px] font-black text-white">{item.rating}</Text>
                             </View>
-
-                            {/* Main Content */}
-                            <View className="flex-row items-center justify-between">
-                                <View className="flex-1 mr-4">
-                                    <Text className="text-2xl font-black text-ink -tracking-[1px] leading-7 mb-1">
-                                        {item.title}
-                                    </Text>
-                                    <Text className="text-xs font-bold text-ink/50 uppercase tracking-widest">
-                                        By {item.author}
-                                    </Text>
-                                </View>
-
-                                {/* Buy Button */}
-                                <TouchableOpacity className="bg-ink px-5 py-3 rounded-xl shadow-sm">
-                                    <Text className="text-parchment font-black text-xs uppercase tracking-widest">
-                                        {item.price}
-                                    </Text>
-                                </TouchableOpacity>
-                            </View>
-
-                            {/* Footer Stats */}
-                            <View className="mt-5 pt-4 border-t border-ink/5 flex-row justify-between items-center">
-                                <View className="flex-row items-center gap-1.5">
-                                    <Ionicons name="download-outline" size={14} color={C.pine} />
-                                    <Text className="text-[10px] font-bold text-pine uppercase tracking-wider">
-                                        {item.downloads} Downloads
-                                    </Text>
-                                </View>
-                                <View className="flex-row items-center gap-1">
-                                    <Text className="text-[10px] font-bold text-ink/40 uppercase tracking-wider">Details</Text>
-                                    <Ionicons name="arrow-forward" size={10} color={C.ink} opacity={0.4} />
-                                </View>
-                            </View>
-                        </View>
-
-                        {/* BACKGROUND DECORATION ICON */}
-                        <View className="absolute -right-6 -bottom-6 opacity-[0.05] pointer-events-none">
-                            <Ionicons name={item.icon as any} size={160} color={C.ink} />
+                            <Text className="text-[10px] font-black text-white/80 uppercase">{item.price}</Text>
                         </View>
                     </View>
                 </View>
@@ -159,78 +109,82 @@ export default function MarketplaceScreen() {
         </TouchableOpacity>
     );
 
+    const SectionHeader = ({ title }: { title: string }) => (
+        <View className="flex-row justify-between items-center px-6 mb-4">
+            <Text className="text-[24px] font-black text-foreground -tracking-[1.5px]">{title}</Text>
+            <TouchableOpacity><Text className="text-[10px] font-black text-foreground/30 uppercase tracking-widest">See All</Text></TouchableOpacity>
+        </View>
+    );
+
     return (
-        <View className="flex-1">
-            {/* ── BACKGROUND ── */}
+        <View className="flex-1 bg-background">
             <LinearGradient
-                colors={[C.lilac, '#F9F6F1', '#F9F6F1', C.lilac]}
-                locations={[0, 0.3, 0.7, 1]}
-                start={{ x: 0, y: 1 }}
-                end={{ x: .7, y: 0 }}
-                style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, opacity: 0.6 }}
+                colors={[primaryColor, 'transparent', 'transparent', primaryColor]}
+                locations={[0, 0.3, 0.9, 1]}
+                style={[StyleSheet.absoluteFill, { opacity: 0.6 }]}
             />
-            <View className="absolute inset-0 bg-parchment -z-10" />
 
             <SafeAreaView className="flex-1">
                 {/* ── HEADER ── */}
-                <View className="px-6 pt-6 pb-2">
-                    <View className="flex-row justify-between items-end mb-6">
-                        <View>
-                            <Text className="text-[32px] font-black -tracking-[2px] text-ink leading-9">
-                                MARKET
-                            </Text>
-                        </View>
+                <View className="px-6 pt-5 pb-8 flex-row items-center justify-between">
+                    <TouchableOpacity
+                        onPress={() => router.back()}
+                        className="w-11 h-11 rounded-full bg-surface items-center justify-center border-[2px] border-foreground/10 shadow-sm"
+                    >
+                        <Ionicons name="arrow-back" size={20} className="text-foreground" />
+                    </TouchableOpacity>
 
+                    <Text className="text-[32px] font-black -tracking-[2.5px] text-foreground">
+                        MARKET
+                    </Text>
 
-                    </View>
-
-                    {/* ── SEARCH BAR ── */}
-                    <View className="mb-6">
-                        <View className="bg-white/40 border border-ink/10 rounded-2xl px-4 py-3.5 flex-row items-center gap-3">
-                            <Ionicons name="search" size={20} color={C.pine} />
-                            <TextInput
-                                placeholder="Search templates..."
-                                placeholderTextColor="#4A706E"
-                                className="flex-1 font-bold text-ink text-sm"
-                            />
-                            <Ionicons name="options-outline" size={20} color={C.ink} />
-                        </View>
-                    </View>
-
-                    {/* ── CATEGORY PILLS ── */}
-                    <View className="mb-2">
-                        <FlatList
-                            horizontal
-                            showsHorizontalScrollIndicator={false}
-                            data={['All', 'Fitness', 'Productivity', 'Mindfulness', 'Career']}
-                            keyExtractor={item => item}
-                            contentContainerStyle={{ gap: 10, paddingRight: 24 }}
-                            renderItem={({ item, index }) => (
-                                <TouchableOpacity
-                                    className={`px-5 py-2 rounded-full border ${index === 0 ? 'bg-ink border-ink' : 'bg-transparent border-ink/20'}`}
-                                >
-                                    <Text className={`text-[10px] font-black uppercase tracking-widest ${index === 0 ? 'text-parchment' : 'text-ink/60'}`}>
-                                        {item}
-                                    </Text>
-                                </TouchableOpacity>
-                            )}
-                        />
-                    </View>
+                    <TouchableOpacity className="w-11 h-11 rounded-full bg-surface items-center justify-center border-[2px] border-foreground/10">
+                        <Ionicons name="search" size={20} className="text-foreground" />
+                    </TouchableOpacity>
                 </View>
 
-                <View className="px-6 mb-4">
-                    <Rule colorClass="bg-ink opacity-10" />
+                {/* ── CATEGORY PILLS ── */}
+                <View className="px-6 mb-8">
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }}>
+                        {categories.map((cat) => (
+                            <TouchableOpacity
+                                key={cat}
+                                onPress={() => setSelectedCategory(cat)}
+                                className={`px-6 py-2.5 rounded-full ${selectedCategory === cat ? 'bg-foreground' : 'bg-surface border border-foreground/5'}`}
+                            >
+                                <Text className={`text-[10px] font-black uppercase tracking-widest ${selectedCategory === cat ? 'text-background' : 'text-foreground/40'}`}>
+                                    {cat}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
                 </View>
 
-                {/* ── MAIN LIST ── */}
-                <FlatList
-                    data={MARKET_ITEMS}
-                    keyExtractor={item => item.id.toString()}
-                    renderItem={renderItem}
-                    contentContainerStyle={{ paddingBottom: 100 }}
-                    showsVerticalScrollIndicator={false}
-                />
+                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+                    <Animated.View entering={FadeInDown.springify().stiffness(SNAPPY_SPRING.stiffness)}>
+                        <HeroCard />
+                    </Animated.View>
 
+                    <View className="mb-10">
+                        <SectionHeader title="TRENDING NOW" />
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 24 }}>
+                            {TRENDING.map((item) => (
+                                <Animated.View key={item.id} layout={Layout.springify()}>
+                                    <HorizontalCard item={item} />
+                                </Animated.View>
+                            ))}
+                        </ScrollView>
+                    </View>
+
+                    <View className="mb-10">
+                        <SectionHeader title="NEW RELEASES" />
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 24 }}>
+                            {TRENDING.slice(0, 2).reverse().map((item) => (
+                                <HorizontalCard key={`new-${item.id}`} item={item} />
+                            ))}
+                        </ScrollView>
+                    </View>
+                </ScrollView>
             </SafeAreaView>
         </View>
     );

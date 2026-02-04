@@ -23,7 +23,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useKeyboardHandler } from 'react-native-keyboard-controller';
 
-// Stiffer, snappier spring configuration
+// High-tension spring for that "expensive" UI feel
 const SNAPPY_SPRING = {
     stiffness: 600,
     damping: 35,
@@ -49,18 +49,21 @@ export default function ChatScreen() {
         else navigationRouter.replace('/');
     }, []);
 
+    // ── KEYBOARD HANDLER (Android Fix) ──
     useKeyboardHandler({
         onMove: (e) => { 'worklet'; keyboardHeight.value = e.height; },
         onEnd: (e) => { 'worklet'; keyboardHeight.value = e.height; },
     });
 
-    const fakeViewStyle = useAnimatedStyle(() => ({ height: Math.abs(keyboardHeight.value) }));
+    const fakeViewStyle = useAnimatedStyle(() => ({
+        height: Math.abs(keyboardHeight.value)
+    }));
 
     const sendMessage = useCallback(() => {
         if (inputText.trim() === '') return;
 
         const newMessage = {
-            id: `${Date.now()}-${Math.random().toString(36).slice(0, 5)}`,
+            id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
             text: inputText.trim(),
             sender: 'user',
         };
@@ -81,19 +84,21 @@ export default function ChatScreen() {
         const isFirstInGroup = !prevItem || prevItem.sender !== item.sender;
         const isLastInGroup = !nextItem || nextItem.sender !== item.sender;
 
-        const standardRad = 24;
-        const sharpRad = 6;
+        // ── PILL RADII LOGIC ──
+        const standardRad = 32;
+        const sharpRad = 8;
 
         return (
             <Animated.View
                 entering={FadeInDown.springify().stiffness(SNAPPY_SPRING.stiffness).damping(SNAPPY_SPRING.damping).mass(SNAPPY_SPRING.mass)}
                 layout={Layout.springify().stiffness(SNAPPY_SPRING.stiffness).damping(SNAPPY_SPRING.damping)}
                 className={`${isUser ? 'items-end' : 'items-start'}`}
-                style={{ marginBottom: isLastInGroup ? 16 : 4 }}
+                // ── TIGHTENED SPACING ──
+                style={{ marginBottom: isLastInGroup ? 16 : 3 }}
             >
                 {isUser ? (
                     <View
-                        className="px-5 py-4 max-w-[85%] bg-primary shadow-lg border-[2px] border-white/40"
+                        className="px-6 py-4 max-w-[85%] bg-primary shadow-lg border-[2px] border-white/40"
                         style={{
                             borderRadius: standardRad,
                             borderTopRightRadius: !isFirstInGroup ? sharpRad : standardRad,
@@ -106,7 +111,7 @@ export default function ChatScreen() {
                     </View>
                 ) : (
                     <View
-                        className="max-w-[85%] rounded-3xl overflow-hidden border-[2px] border-white/60 shadow-xl"
+                        className="max-w-[85%] rounded-[32px] overflow-hidden border-[2px] border-white/60 shadow-xl"
                         style={{
                             borderRadius: standardRad,
                             borderTopLeftRadius: !isFirstInGroup ? sharpRad : standardRad,
@@ -115,7 +120,7 @@ export default function ChatScreen() {
                     >
                         <BlurView intensity={80} tint="default" style={StyleSheet.absoluteFill} />
                         <View
-                            className="px-5 py-4 bg-surface border-[2px] border-border-subtle"
+                            className="px-6 py-4 bg-surface border-[2px] border-border-subtle"
                             style={{
                                 borderRadius: standardRad - 2,
                                 borderTopLeftRadius: !isFirstInGroup ? sharpRad : standardRad - 2,
@@ -137,13 +142,11 @@ export default function ChatScreen() {
             <LinearGradient
                 colors={[primaryColor, 'transparent', 'transparent', primaryColor]}
                 locations={[0, 0.3, 0.9, 1]}
-                // start={{ x: 0, y: 1 }}
-                // end={{ x: 0, y: 0 }}
                 style={[StyleSheet.absoluteFill, { opacity: 0.6 }]}
             />
 
             <SafeAreaView className="flex-1" edges={['top']}>
-                {/* Header */}
+                {/* ── HEADER ── */}
                 <View className="px-6 py-4 flex-row items-center justify-between border-b border-foreground/10">
                     <TouchableOpacity
                         onPress={handleBack}
@@ -171,6 +174,7 @@ export default function ChatScreen() {
                     <View className="w-11" />
                 </View>
 
+                {/* ── MESSAGES ── */}
                 <FlatList
                     ref={flatListRef}
                     data={messages}
@@ -179,16 +183,16 @@ export default function ChatScreen() {
                     showsVerticalScrollIndicator={false}
                     onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
                     renderItem={renderMessage}
-                    removeClippedSubviews={true} // Performance optimization for long chats
+                    removeClippedSubviews={true}
                 />
 
-                {/* Input Area */}
+                {/* ── INPUT AREA ── */}
                 <View className="px-5 pb-6 pt-3">
-                    <View className="rounded-3xl overflow-hidden border-[2px] border-white/60 shadow-2xl">
+                    <View className="rounded-full overflow-hidden border-[2px] border-white/60 shadow-2xl">
                         <BlurView intensity={80} tint="default" style={StyleSheet.absoluteFill} />
-                        <View className="flex-row items-center bg-surface/95 border-[2px] border-border-subtle rounded-3xl px-5 py-2">
+                        <View className="flex-row items-center bg-surface/95 border-[2px] border-border-subtle rounded-full px-5 py-2">
                             <TextInput
-                                placeholder="Message..."
+                                placeholder="message..."
                                 placeholderTextColor="rgba(2, 9, 18, 0.4)"
                                 className="flex-1 text-[15px] font-bold text-foreground py-2.5 max-h-32"
                                 style={{ outlineStyle: 'none' } as any}
@@ -203,7 +207,7 @@ export default function ChatScreen() {
                                 <Animated.View entering={ZoomIn.duration(150)}>
                                     <TouchableOpacity
                                         onPress={sendMessage}
-                                        className="ml-2 w-11 h-11 bg-primary rounded-full items-center justify-center shadow-lg border-[2px] border-white/60"
+                                        className="ml-2 w-11 h-11 bg-primary rounded-full items-center justify-center shadow-lg border-[2px] border-white/40"
                                     >
                                         <Ionicons name="arrow-up" size={22} color="white" />
                                     </TouchableOpacity>
@@ -213,6 +217,7 @@ export default function ChatScreen() {
                     </View>
                 </View>
 
+                {/* Keyboard Spacer */}
                 <Animated.View style={fakeViewStyle} />
             </SafeAreaView>
         </View>

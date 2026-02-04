@@ -7,7 +7,7 @@ import { ScrollView, Text, TouchableOpacity, StyleSheet, View } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors } from '@/constants/theme';
-
+import { useRouter } from 'expo-router';
 
 const StatItem = ({ label, value, hasBorder = true }: { label: string, value: string, hasBorder?: boolean }) => (
   <>
@@ -24,7 +24,6 @@ const Rule = ({ className = 'bg-foreground' }: { className?: string }) => (
 );
 
 // ── DATA ──
-
 const COACHES = [
   { id: 1, name: 'Atlas', specialty: 'Fitness', unread: 3, avatar: 'A', sessions: 42, streak: 12, accent: 'bg-primary', textAccent: 'text-primary', hex: '#7869B0', hasReminder: true },
   { id: 2, name: 'Sage', specialty: 'Learning', unread: 0, avatar: 'S', sessions: 31, streak: 5, accent: 'bg-success', textAccent: 'text-success', hex: '#4C9F70', hasReminder: false },
@@ -36,13 +35,13 @@ const COACHES = [
 const CARD_WIDTH = 185;
 
 export default function HomeScreen() {
+  const router = useRouter();
   const CAROUSEL_DATA = [{ id: 'new', type: 'create' }, ...COACHES];
   const colorScheme = useColorScheme() ?? 'light';
   const primary = Colors[colorScheme].tint;
 
   return (
     <View className="flex-1 bg-background">
-      {/* ── BACKGROUND GRADIENTS ── */}
       <LinearGradient
         colors={[primary, 'transparent', 'transparent', primary]}
         locations={[0, 0.3, 0.7, 1]}
@@ -51,24 +50,21 @@ export default function HomeScreen() {
         style={[StyleSheet.absoluteFill, { opacity: 0.6 }]}
       />
 
-      <SafeAreaView className="flex-1">
-        {/* ── Header ── */}
+      <SafeAreaView className="flex-1" style={{ overflow: 'visible' }}>
+        {/* Header */}
         <View className="px-6 pt-5">
           <View className="flex-row items-center justify-around mb-6">
             <View className="items-center">
               <Ionicons name="flame" size={22} className="text-primary" />
               <Text className="text-[13px] font-bold text-foreground">87</Text>
             </View>
-            <Text className="text-[35px] font-black -tracking-[3px] text-foreground">
-              COACHAI
-            </Text>
+            <Text className="text-[35px] font-black -tracking-[3px] text-foreground">COACHAI</Text>
             <TouchableOpacity className="relative">
               <Ionicons name="notifications-outline" size={22} className="text-foreground" />
               <View className="absolute -top-0.5 -right-0.5 w-[9px] h-[9px] rounded-full bg-primary border-[1.5px] border-background" />
             </TouchableOpacity>
           </View>
 
-          {/* Stats Row */}
           <View className="flex-row py-3 pb-4 items-stretch">
             <StatItem label="Coaches" value="5" />
             <StatItem label="Sessions" value="155" />
@@ -77,7 +73,7 @@ export default function HomeScreen() {
           <Rule className="bg-foreground/10" />
         </View>
 
-        {/* ── Stories Rail ── */}
+        {/* Stories Rail */}
         <View className="pt-8 pb-8">
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 24 }}>
             <TouchableOpacity className="mr-5 items-center">
@@ -90,7 +86,10 @@ export default function HomeScreen() {
             </TouchableOpacity>
 
             {COACHES.map((coach) => (
-              <TouchableOpacity key={coach.id} className="mr-5 items-center">
+              <TouchableOpacity
+                key={coach.id}
+                className="mr-5 items-center"
+              >
                 <View className={`w-[68px] h-[68px] rounded-full justify-center items-center mb-1.5 border-[2px] ${coach.hasReminder ? 'border-primary' : 'border-foreground/10'} bg-surface`}>
                   <View className="w-[58px] h-[58px] rounded-full bg-foreground justify-center items-center border-[2px] border-background">
                     <Text className="text-xl font-black text-background">{coach.avatar}</Text>
@@ -111,12 +110,11 @@ export default function HomeScreen() {
 
         <View className="flex-1" />
 
-        {/* ── Carousel ── */}
-        <View className="justify-end pb-3">
+        {/* Carousel */}
+        <View className="justify-end" style={{ overflow: 'visible', paddingBottom: 12 }}>
           <ArchedCarousel
             data={CAROUSEL_DATA}
             initialIndex={1}
-            // 👇 RESTORED PROPS
             bend={20}
             cardWidth={CARD_WIDTH}
             cardSpacing={33}
@@ -132,11 +130,17 @@ export default function HomeScreen() {
                 );
               }
               return (
-                <TouchableOpacity activeOpacity={0.85} style={{ width: CARD_WIDTH, height: 260 }}>
+                <TouchableOpacity
+                  activeOpacity={0.85}
+                  style={{ width: CARD_WIDTH, height: 260 }}
+                  onPress={() => router.push({
+                    pathname: "/chat/[id]",
+                    params: { id: item.id.toString(), name: item.name }
+                  })}
+                >
                   <View className="flex-1 rounded-3xl overflow-hidden border-[2px] border-white/60 shadow-2xl shadow-black/20">
                     <BlurView intensity={80} tint="default" style={StyleSheet.absoluteFill} />
                     <View className="flex-1 bg-surface border-[2px] rounded-3xl border-border-subtle">
-                      {/* Card Header */}
                       <View className="flex-row items-center justify-between px-3.5 py-3 border-b border-foreground/5 bg-background/10">
                         <Text className={`text-[10px] uppercase tracking-[2px] font-black ${item.textAccent}`}>
                           {item.specialty}
@@ -148,7 +152,6 @@ export default function HomeScreen() {
                         )}
                       </View>
 
-                      {/* Card Content */}
                       <View className="flex-1 p-3.5 justify-between">
                         <View>
                           <Text className="text-[80px] font-black leading-[72px] text-foreground opacity-[0.08] -mt-1">{item.avatar}</Text>
@@ -179,11 +182,14 @@ export default function HomeScreen() {
           />
         </View>
 
-        {/* ── View All ── */}
+        {/* View All */}
         <View className="px-6 pb-4 pt-4 items-center">
-          <TouchableOpacity className="flex-row items-center gap-1">
+          <TouchableOpacity
+            className="flex-row items-center gap-1"
+            onPress={() => router.push('/coachlist')}
+          >
             <Text className="text-[12px] font-bold text-primary uppercase tracking-[2px]">View All</Text>
-            <Ionicons name="arrow-forward" size={12} className="text-foreground" />
+            <Ionicons name="arrow-forward" size={12} className="text-primary" />
           </TouchableOpacity>
         </View>
       </SafeAreaView>

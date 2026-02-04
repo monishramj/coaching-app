@@ -2,6 +2,7 @@
   "expo": {
     "name": "coaching-app",
     "slug": "coaching-app",
+    "owner": "wikzam",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -9,7 +10,11 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.wikzam.coachingapp",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -19,7 +24,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.wikzam.coachingapp"
     },
     "web": {
       "bundler": "metro",
@@ -48,9 +54,8 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "66b18cde-b011-408c-9f5a-d1763abc43ff"
+        "projectId": "dce08d47-bb2e-4f84-820e-1d524ff48114"
       }
-    },
-    "owner": "monishramj"
+    }
   }
 }

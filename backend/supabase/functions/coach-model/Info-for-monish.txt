@@ -1,0 +1,35 @@
+What is done:
+- coach.ts which is the entrypoint to this edge function. It is called whenever a coach is created and it saves the info of that
+coach into the db
+
+What you need to do:
+In supabase, the "coach" table is where all ts is handled
+Add a "name" column for the name the user can give to the coach 
+Add a "created by" column which holds the uuid (type is uuid) of the user who created it
+Make sure to update coach.ts such that the created by and name rows are also updated. You can assume that the json file that 
+coach.ts recieves contains all data needed.
+
+Again in supabase, add a "published" column of booleans which tracks if user chose to publish their choach (still in the coach table)
+RLS or row level security is enabled for the table so you need to write a policy in SQL which basically says
+"Users can only read their own data, unless this boolean column of published is true in which case all users can read the
+row which is marked as true"
+ 
+The sql function will be written in supabase in the sql editor (found in left menu)
+---------------------------
+Also add a delete-coach.ts to.. delete the coach from db if user desires. Ofc only the creator can delete.
+(no automatic delete yet, keep it simple, coach only deletes if creator deletes)
+---------------------------
+Next, idk how you choose to do this, whether adding onto this edge function or creating a new one but:
+
+High level pipeline for marketplace:
+Frontend asks backend to display marketplace
+Backend searches through coach table and finds all rows for which "published" is true and sends to frontend the name, creator and coachid
+Frontend can display name of coach and created by as part of UI and when anyone chooses to "download" or use a coach, we can tell what coach
+they chose to use because when they click the coach, frontend will quiery backend with the coachID
+
+
+=========================================
+Bonus:
+If you have time after all this (else ill take care of it.. maybe depending on where I, Adarsh, am with things)
+Rn we can create coaches but if the creator choose to update it after creation its.. not possible so smth like an
+update-coach.ts that says if the coach exists and the person making the update quiery is the creator then we update instructions

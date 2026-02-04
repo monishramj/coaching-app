@@ -1,0 +1,16 @@
+RLS is enabled and it is creator only unless this column (the marketplace column) is public in which case all users can read all. Except for the userid of creator.
+
+Only the creator can update the fact that its public or private|
+
+Keep tabs on how things with coach is going:
+I have not figured out exactly how to do this, but if the coach is marked public, everyone has read access to it which is fine
+but we need to make it so only the creator can modify it.. and also if there is some way to hide uuid specifically from everyone
+without making it difficult for backend to tell if the user has perms to use the coach.
+
+In future perhaps add an array called hasPerms which holds uuid of all who have access to it (works if they need to buy the model)
+if we add this, would need to ensure that if someone who downloaded it off market tries to delete it then only their local instance disappears
+
+Coaches are not updatable once created.. hm might have to create an update coach.ts
+
+toDo: have backups cos eveyrthing rn is using gemini pro and so it is bound to run out quick.
+For memory and retrieval, if gemini runs out of credits, switch to flash and then ulta flash or whatever as needed.

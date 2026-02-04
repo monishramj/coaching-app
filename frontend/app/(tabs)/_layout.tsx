@@ -96,6 +96,7 @@ export default function TabLayout() {
       <Tabs.Screen name="index" />
       <Tabs.Screen name="marketplace" />
       <Tabs.Screen name="user" />
+
     </Tabs>
   );
 }

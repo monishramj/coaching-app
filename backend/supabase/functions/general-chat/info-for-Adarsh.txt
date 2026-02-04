@@ -1,12 +1,3 @@
-I now need to create an edge function of general chat
-how it works is:
-- i recieve a chat or one message from frontend
-- I encode it with gemeni vector embedding
-- I conduct a search in my memories table in supabase database and find the most similar vectors
-then i get the memories column that cointains the actaul memory that the search returned and get all of those
-
-for memory storage, expect a coach input also and store mempories per coach
-for memory retrieval search for both user and coachids to matches
 RLS is enabled and it is creator only unless this column (the marketplace column) is public in which case all users can read all. Except for the userid of creator.
 
 Only the creator can update the fact that its public or private|
@@ -21,3 +12,5 @@ if we add this, would need to ensure that if someone who downloaded it off marke
 
 Coaches are not updatable once created.. hm might have to create an update coach.ts
 
+toDo: have backups cos eveyrthing rn is using gemini pro and so it is bound to run out quick.
+For memory and retrieval, if gemini runs out of credits, switch to flash and then ulta flash or whatever as needed.

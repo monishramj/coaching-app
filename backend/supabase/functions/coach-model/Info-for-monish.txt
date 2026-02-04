@@ -13,7 +13,7 @@ Again in supabase, add a "published" column of booleans which tracks if user cho
 RLS or row level security is enabled for the table so you need to write a policy in SQL which basically says
 "Users can only read their own data, unless this boolean column of published is true in which case all users can read the
 row which is marked as true"
-
+ 
 The sql function will be written in supabase in the sql editor (found in left menu)
 ---------------------------
 Also add a delete-coach.ts to.. delete the coach from db if user desires. Ofc only the creator can delete.

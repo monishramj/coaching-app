@@ -11,7 +11,7 @@
 */
 
 import { summarizeMessages } from "./summary.ts";
-import { generateVector } from "./vector_embed.ts";
+import { generateVector } from "./vector-embed.ts";
 import { ChatMessage } from "../types.ts";
 import { supabase } from "../../supabase-setup.ts";
 

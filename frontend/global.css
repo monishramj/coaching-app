@@ -5,17 +5,15 @@
 @layer base {
     :root {
         --color-background: #F9F6F1;
-        /* Parchment */
         --color-text: #020912;
-        /* Ink Black */
+        --color-surface: rgba(255, 255, 255, 0.4);
+        --color-border-subtle: rgba(2, 9, 18, 0.1);
     }
 
-    @media (prefers-color-scheme: dark) {
-        :root {
-            --color-background: #020912;
-            /* Ink Black */
-            --color-text: #F9F6F1;
-            /* Parchment */
-        }
+    .dark {
+        --color-background: #020912;
+        --color-text: #F9F6F1;
+        --color-surface: rgba(255, 255, 255, 0.05);
+        --color-border-subtle: rgba(249, 246, 241, 0.1);
     }
 }

@@ -104,8 +104,13 @@ export default function UserScreen() {
 
                     {/* ── STATS GRID (Glassmorphic) ── */}
                     <View className="px-6 mb-8">
-                        <View className="rounded-3xl overflow-hidden border border-white/60 bg-white/30 relative shadow-sm">
-                            <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
+                        <View className="rounded-3xl overflow-hidden border border-white/60
+                         relative shadow-sm">
+                            <BlurView
+                                intensity={80}
+                                tint="light"
+                                style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255,255,255,0.5)' }]}
+                            />
                             <View className="flex-row p-5 justify-between items-center divide-x divide-ink/5">
                                 <View className="items-center flex-1">
                                     <Text className="text-2xl font-black text-ink">{USER.stats.sessions}</Text>

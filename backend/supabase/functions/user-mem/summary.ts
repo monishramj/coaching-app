@@ -19,9 +19,18 @@ export async function summarizeMessages(messages: string) {
     const response = await genAI.models.generateContent({
         model: "gemini-2.5-pro",
         //Update instructions later. Assume it returns its bullet points seperated by "\n"
-        contents: `Summarize this conversation, focusing on key goals, 
-            decisions, and context that would be useful for future 
-            conversations:\n${messages}`
+        contents: `Analyze the following 10-message exchange between an AI coach and a user. 
+        Provide a concise summary using a maximum of 4 bullet points (fewer is preferred if the context allows). 
+        Group each user query with its corresponding agent resolution to preserve the 'challenge-and-solution' logic. 
+        Focus exclusively on information critical for future sessions: specific goals mentioned, progress made, 
+        obstacles identified, and any agreed-upon next steps. Avoid fluff; prioritize actionable data that informs 
+        how the coach should interact with the user moving forward. 
+        
+        Output Format Requirement: Your output must contain only the text of the points themselves. Do not use 
+        symbols (like -, *, or •), numbers, or introductory text. Separate each point using only a newline (\n) 
+        character.
+        
+        Here is the convesation:\n${messages}`
     });
     
     /* assuming that response always returns a text. Need to handle cases where gemini doesnt return text.

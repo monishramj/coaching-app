@@ -18,7 +18,7 @@ export function updateBuffer(
   agentMsg: string
 ): void {
   const key = `${userID}:${coachID}`;
-  let buffer = chatBuffers.get(key) || [];
+  const buffer = chatBuffers.get(key) || [];
   
   /* Add new messages, each message of user quiery and agent response takes 1 space
     so array is of length 30

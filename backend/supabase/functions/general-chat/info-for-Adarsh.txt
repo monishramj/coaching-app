@@ -12,7 +12,5 @@ if we add this, would need to ensure that if someone who downloaded it off marke
 
 Coaches are not updatable once created.. hm might have to create an update coach.ts
 
-ToDo
-for memory storage, expect a coach input also and store mempories per coach
-actually write the gemini instructions for memoy, retrieval and core
-finish history
+toDo: have backups cos eveyrthing rn is using gemini pro and so it is bound to run out quick.
+For memory and retrieval, if gemini runs out of credits, switch to flash and then ulta flash or whatever as needed.

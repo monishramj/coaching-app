@@ -14,8 +14,6 @@ const genAI = new GoogleGenAI({
   apiKey: apiKey
 });
 
-//ToDo: Create ChatMessages 'struct' of type role: message:
-// To be done in general chat edge function when I manage user chat hist
 export async function summarizeMessages(messages: string) {
 
     const response = await genAI.models.generateContent({

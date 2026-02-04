@@ -5,6 +5,10 @@ import {supabase} from "../../supabase-setup.ts";
 import { generateVector } from "./vector-embed-two.ts";
 import { GoogleGenAI } from "google-gen"
 import { CORE_SYSTEM_PROMPT } from "../../supabase-setup.ts";
+import { getBuffer } from "./chat-history.ts";
+import { updateBuffer } from "./chat-history.ts";
+import { formatRecentHistory } from "./format-recent-history.ts";
+import { createMsg } from "./format-recent-history.ts";
 
 //Initializing the gemini api for later call
 const apiKey = Deno.env.get("GEMINI_API");
@@ -19,17 +23,20 @@ const genAI = new GoogleGenAI({
 Deno.serve(async (req) => {
     
     const { data: { user }, error: authError } = await supabase.auth.getUser()
-    const userUUID = user?.id
     // return error if unauthorized
     if (authError || !user) {
         return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 })
     }
+    const userUUID = user.id
 
     // extract the user uuid from the JWT in the header
-    const {chat : chatMsg, coachID} = await req.json()
+    const {chat : userChatMsg, coachID} = await req.json()
+
+    // get the most recent memories stored in local buffer if any
+    const recentHistory = getBuffer(userUUID, coachID)
 
     // vector embed the chat we just got
-    const vector = generateVector(chatMsg)
+    const vector = generateVector(userChatMsg)
 
     /* call the vector_search sql funcion from supabase and pass in
         the required parameters
@@ -57,10 +64,39 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ error: 'Coach search failed in process-chat.ts' }), { status: 500 })
     }
     
-    const response = await genAI.models.generateContent({
+    const chat = genAI.chats.create({
         model: "gemini-2.5-pro",
-        //Update instructions later.
-        contents: `Something something ${CORE_SYSTEM_PROMPT} something something ${coachResults}
-        something something ${longTermMems} something something ${recentHistory} something`
+
+        // Create a custom system config with system instructions
+        config: {
+            systemInstruction: [
+                { text: `${CORE_SYSTEM_PROMPT}\n${coachResults}` }
+            ],
+        },
+
+        // Initialize history with long-term memory and recent conversation
+        history: [
+            createMsg(
+            "user",
+            `Long-term memory context (do not repeat verbatim):\n${longTermMems}`
+            ),
+            createMsg("model", "Acknowledged."),
+
+            // Recent history formatted via helper function
+            ...formatRecentHistory(recentHistory),
+        ],
     });
+
+    const response = await chat.sendMessage({ message: userChatMsg});
+    const agentChatMsg = response.text
+
+    if(!agentChatMsg) {
+        return new Response(JSON.stringify({ error: 'Response does not contain text in process-chat.txt' }), { status: 500 })
+    }
+    updateBuffer(userUUID, coachID, userChatMsg, agentChatMsg);
+    // make sure to return the agent chat msg to frontend
+    return new Response(
+        JSON.stringify({ reply: agentChatMsg}),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+    );
 });

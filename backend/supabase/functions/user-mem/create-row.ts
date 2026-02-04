@@ -15,25 +15,14 @@ import { generateVector } from "./vector-embed.ts";
 import { ChatMessage } from "../types.ts";
 import { supabase } from "../../supabase-setup.ts";
 
-Deno.serve(async (req) => {
-  const authHeader = req.headers.get("Authorization");
-
-  if (authHeader !== `Bearer ${Deno.env.get("SUPABASE_PRIVILEGED")}`) {
-    return new Response("Unauthorized", { status: 401});
-  }
-
-  try {
-  // expecting a json file of type userID: text and an array messages of type ChatMessage:
-  const { userId, messages }: { userId: string; messages: ChatMessage[] } = await req.json();
-
+export async function createRow(userID: string, coachID: string, messages: ChatMessage[]) {
   // Ensure userID exists, messages is an array and it contains elements
-  if (!userId || !Array.isArray(messages) || messages.length === 0) {
+  if (!userID || !coachID || !Array.isArray(messages) || messages.length === 0) {
     return new Response(
-      JSON.stringify({ error: "userId and a non-empty messages array are required" }), 
+      JSON.stringify({ error: "userID, coachID and a non-empty messages array are required" }), 
       { status: 400, headers: { "Content-Type": "application/json" } }
     );
   }
-
     /* Turns the Chat message array of conversation between user and model into a single
     string to pass to the AI to summarize
     */
@@ -41,7 +30,7 @@ Deno.serve(async (req) => {
     .map(m => `${m.role}: ${m.text}`)
     .join('\n');
 
-    // We eplace all ` with _ to avoid prematurely escaping the sequence
+    // We replace all ` with _ to avoid prematurely escaping the sequence
     const safeConversationText = conversationText.replace(/`/g, "_");
 
     const myBulletPoints = await summarizeMessages(safeConversationText);
@@ -57,7 +46,8 @@ Deno.serve(async (req) => {
       const { error } = await supabase
         .from('user-memories')
         .insert({
-          user_id: userId,
+          user_id: userID,
+          coach_id: coachID,
           memory: point,
           embedding: vector
         });
@@ -68,8 +58,9 @@ Deno.serve(async (req) => {
     }
 
     await supabase.rpc('delete_least_accessed_memories', {
-      p_user_id: userId,
-      p_max_count: 75
+      p_user_id: userID,
+      p_coach_id: coachID,
+      p_max_count: 40
     });
 
     return new Response(
@@ -80,10 +71,4 @@ Deno.serve(async (req) => {
       }),
       { headers: { "Content-Type": "application/json" } }
     );
-
-  } catch (err) {
-    return new Response(JSON.stringify({
-      error: (err as Error).message}),
-      { status: 500 });
-  }
-});
+}

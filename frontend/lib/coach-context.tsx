@@ -2,10 +2,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from './supabase';
 
-// 1. DEV MODE CONSTANT (Matches your backend)
-const TEST_USER_ID = "099cc5d8-2318-40e7-b1f8-334a4146a014";
-
-// 2. Define the shape of a Coach (Matches your Database & UI)
+// Define the shape of a Coach (Matches your Database & UI)
 export interface Coach {
   id: string;
   name: string;
@@ -24,46 +21,76 @@ interface CoachContextType {
 const CoachContext = createContext<CoachContextType | undefined>(undefined);
 
 export function CoachProvider({ children }: { children: React.ReactNode }) {
+  // State for list of coaches and loading indicator
   const [coaches, setCoaches] = useState<Coach[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchCoaches = async () => {
     try {
-      // --- DEV MODE FETCH ---
-      // We explicitly fetch coaches created by your Test User ID
-      // so you can see them without needing full Auth login flow yet.
-      
-      const { data, error } = await supabase
-        .from('coaches')
-        .select('*')
-        .eq('created_by', TEST_USER_ID) 
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching coaches:', error);
+      // 1. Get current session (user must be logged in)
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        setCoaches([]);
+        setIsLoading(false);
         return;
       }
-
-      if (data) {
-        // 3. Map Database fields to UI fields
-        const formattedCoaches = data.map((item: any) => ({
-          id: item.coach_id,
-          name: item.name || 'Coach',
-          training_model: item.training_model || 'General',
-          personality: item.personality || 'Standard',
-          avatar: (item.name || 'C').charAt(0).toUpperCase(), // Generate Avatar letter
-        }));
-        setCoaches(formattedCoaches);
+      // 2. Fetch ONLY the coaches this user has hired (production logic)
+      const user = session.user;
+      const { data: userCoachData, error: userCoachError } = await supabase
+        .from('user_coaches')
+        .select(`
+          coach_id,
+          coaches (
+            coach_id,
+            name,
+            training_model,
+            personality,
+            description,
+            created_by
+          )
+        `)
+        .eq('user_id', user.id);
+      if (userCoachError) {
+        // Partner: Log error if fetching user's hired coaches fails
+        console.error('Error fetching user coaches:', userCoachError);
+        setCoaches([]);
+        setIsLoading(false);
+        return;
       }
+      // 4. Format database data for UI (matches Coach interface)
+      const formattedCoaches: Coach[] = (userCoachData ?? []).map((item: any) => ({
+        id: item.coaches.coach_id,
+        name: item.coaches.name || item.coaches.training_model || 'Coach',
+        training_model: item.coaches.training_model || 'General',
+        personality: item.coaches.personality || 'Standard',
+        avatar: (item.coaches.name?.[0] || item.coaches.training_model?.[0] || 'C').toUpperCase(),
+      }));
+      setCoaches(formattedCoaches);
     } catch (err) {
+      // Partner: Log unexpected errors
       console.error('Unexpected error:', err);
+      setCoaches([]);
     } finally {
+      // Always clear loading state
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
     fetchCoaches();
+
+    // Partner: Re-fetch coaches when auth state changes (login/logout)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        fetchCoaches();
+      } else {
+        setCoaches([]);
+        setIsLoading(false);
+      }
+    });
+
+    // Partner: Clean up subscription on unmount
+    return () => subscription.unsubscribe();
   }, []);
 
   // Helper to check if a coach is already in the list

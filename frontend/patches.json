@@ -1,0 +1,8 @@
+{
+    "patches": {
+        "react-native-css-interop": {
+            "render-component.js": "Patched printUpgradeWarning to not stringify props"
+        }
+    },
+    "note": "Run this after npm install: node scripts/patch-css-interop.js"
+}
